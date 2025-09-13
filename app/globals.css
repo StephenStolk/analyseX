@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Enhanced purple gradient system */
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 262 30% 95%;
+    --secondary-foreground: 262 83% 25%;
+
+    --muted: 262 15% 97%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 262 83% 65%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 262 20% 90%;
+    --input: 262 20% 96%;
+    --ring: 262 83% 58%;
+
+    --radius: 0.75rem;
+
+    /* Enhanced chart colors with purple gradient */
+    --chart-1: 262 83% 58%;
+    --chart-2: 260 75% 65%;
+    --chart-3: 265 70% 55%;
+    --chart-4: 270 65% 60%;
+    --chart-5: 255 60% 70%;
+
+    /* New design tokens for modern UI */
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(260 75% 65%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(262 30% 95%) 0%, hsl(262 15% 97%) 100%);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 20% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Enhanced purple for dark mode */
+    --primary: 262 83% 70%;
+    --primary-foreground: 222.2 84% 4.9%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 262 83% 75%;
+    --accent-foreground: 222.2 84% 4.9%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 262 83% 70%;
+
+    /* Enhanced chart colors for dark mode */
+    --chart-1: 262 83% 70%;
+    --chart-2: 260 75% 75%;
+    --chart-3: 265 70% 65%;
+    --chart-4: 270 65% 70%;
+    --chart-5: 255 60% 80%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 70%) 0%, hsl(260 75% 75%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(217.2 32.6% 17.5%) 0%, hsl(217.2 32.6% 20%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Enhanced animation utilities */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  .dark .glass-effect {
+    background-color: rgba(17, 25, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Custom styles for ReactMarkdown tables */
+.prose table {
+  @apply w-full text-sm border-collapse;
+}
+
+.prose thead {
+  @apply [&_tr]:border-b bg-muted/50;
+}
+
+.prose tbody {
+  @apply [&_tr:last-child]:border-0;
+}
+
+.prose tr {
+  @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+}
+
+.prose th {
+  @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([data-tooltip-trigger])]:pr-0;
+}
+
+.prose td {
+  @apply p-4 align-middle [&:has([data-tooltip-trigger])]:pr-0;
+}
+
+/* Custom styles for ReactMarkdown lists */
+.prose ul {
+  @apply list-disc list-inside mb-2 space-y-1 text-muted-foreground;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-2 space-y-1 text-muted-foreground;
+}
+
+.prose li {
+  @apply mb-1;
+}
+
+/* Put in globals.css (or tailwind entry file). Keep after Tailwind base/utilities so it overrides if needed. */
+
+.sidebar-wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 60; /* above content so icons are always visible */
+  /* wrapper itself doesn't need width; the inner .sidebar controls width */
+}
+
+/* the actual sidebar that shows icons / labels */
+.sidebar {
+  width: 4rem; /* collapsed width (64px) */
+  transition: width 220ms ease, box-shadow 220ms ease;
+  will-change: width;
+  overflow: hidden; /* hide label text when collapsed */
+  display: flex;
+  flex-direction: column;
+}
+
+/* expand on hover or keyboard focus-in (accessibility) */
+.sidebar-wrapper:hover .sidebar,
+.sidebar-wrapper:focus-within .sidebar {
+  width: 16rem; /* expanded width (256px) */
+}
+
+/* label elements (span.label) are hidden by default and fade in when expanded */
+.sidebar .label {
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+  transform: translateX(-4px);
+  display: inline-block;
+}
+
+/* show labels when expanded */
+.sidebar-wrapper:hover .sidebar .label,
+.sidebar-wrapper:focus-within .sidebar .label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* push the content to the right only when the sidebar wrapper is hovered/focused */
+.app-content {
+  margin-left: 0;
+  transition: margin-left 220ms ease;
+}
+
+/* shift content to make room for expanded sidebar */
+.sidebar-wrapper:hover ~ .app-content,
+.sidebar-wrapper:focus-within ~ .app-content {
+  margin-left: 16rem; /* match the expanded sidebar width */
+}
+
+/* small polish: keep collapsed icon bar overlaying content (no gap) */
+.sidebar {
+  box-shadow: none;
+}
+.sidebar-wrapper:hover .sidebar {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
+}
+@layer utilities {
+  /* diagonal clipping */
+  .clip-diagonal {
+    clip-path: polygon(0 100%, 0 0, 100% 0, 100% 70%);
+  }
+
+  /* animated grid powering up */
+  .grid-bg {
+    background-image: 
+      linear-gradient(to right, rgba(120,119,198,0.15) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(120,119,198,0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: grid-move 8s linear infinite;
+    mask-image: radial-gradient(circle at center, black 80%, transparent 100%);
+    mask-repeat: no-repeat;
+    mask-size: cover;
+  }
+
+  @keyframes grid-move {
+    0% {
+      background-position: 0 0, 0 0;
+    }
+    100% {
+      background-position: 0 -40px, 0 -40px; /* scrolls upward */
+    }
+  }
+
+  /* optional: glowing pulse on top */
+  .grid-glow {
+    background: linear-gradient(to right, rgba(56,189,248,0.15), rgba(147,51,234,0.15));
+    animation: grid-glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes grid-glow {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.6; }
+  }
+}
