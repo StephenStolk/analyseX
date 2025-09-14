@@ -3,7 +3,8 @@
 import type React from "react"
 import { useRef, useEffect, useState } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
+import { motion, useScroll, useTransform, useMotionValue, useSpring,AnimatePresence } from "framer-motion"
+
 import {
   ArrowRight,
   BarChart2,
@@ -19,6 +20,8 @@ import {
   TrendingUp,
   PieChart,
   Activity,
+  Users,
+  Cloud,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
@@ -223,8 +226,8 @@ export function LandingPage() {
     hidden: {
       opacity: 0,
       y: 20,
-      rotateX: -15,
-      z: -100,
+      rotateX: -5,
+      z: -50,
     },
     visible: {
       opacity: 1,
@@ -233,10 +236,49 @@ export function LandingPage() {
       z: 0,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.25, 0, 1],
+        ease: [0, 0, 0, 0],
       },
     },
   }
+
+  const useCases = [
+  {
+    title: "Finance Analyst",
+    description: "Balance sheet creation for a SaaS company",
+    icon: TrendingUp,
+    gradient: "from-purple-400/10 to-pink-400/10",
+  },
+  {
+    title: "Marketing",
+    description: "Acquisition channel efficiency analysis",
+    icon: BarChart2,
+    gradient: "from-blue-400/10 to-purple-400/10",
+  },
+  {
+    title: "Operations",
+    description: "Forecasting and inventory optimization",
+    icon: Activity,
+    gradient: "from-green-400/10 to-blue-400/10",
+  },
+  {
+    title: "Business Owners",
+    description: "Cash flow forecasting and budgeting",
+    icon: PieChart,
+    gradient: "from-yellow-400/10 to-orange-400/10",
+  },
+  {
+    title: "Data Science",
+    description: "Data cleaning and preparation",
+    icon: Database,
+    gradient: "from-teal-400/10 to-blue-400/10",
+  },
+  {
+    title: "Scientific Research",
+    description: "Correlation matrix on research datasets",
+    icon: LineChart,
+    gradient: "from-indigo-400/10 to-purple-400/10",
+  },
+];
 
   const features = [
     {
@@ -273,7 +315,18 @@ export function LandingPage() {
     },
   ]
 
+  const features1 = [
+  { title: "End-to-End Encryption", description: "Your data is always secured with AES-256 encryption.", icon: Lock },
+  { title: "Data Sovereignty", description: "Full control over where your data is stored & processed.", icon: Database },
+  { title: "Privacy Compliance", description: "Built to meet GDPR, HIPAA, and SOC2 standards.", icon: Shield },
+  { title: "Advanced Analytics", description: "Powerful insights without exposing raw data.", icon: BarChart2 },
+  { title: "Collaboration", description: "Secure sharing with role-based permissions.", icon: Users },
+  { title: "Cloud Flexibility", description: "Deploy on-premise, private cloud, or hybrid.", icon: Cloud },
+];
+
   const getStartedLink = !loading ? (user ? "/app" : "/auth/sign-up") : "/auth/sign-up"
+
+  const [active, setActive] = useState(0);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -281,128 +334,106 @@ export function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-    <section
-      ref={ref}
-      className="relative overflow-hidden pb-20 pt-24 md:pb-32 md:pt-36"
-      style={{ perspective: "1000px" }}
-      onMouseMove={handleMouseMove}
-    >
-      {/* Background with diagonal cut */}
-      <div className="absolute inset-0 -z-20">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent clip-diagonal" />
-      </div>
+   <section
+  ref={ref}
+  className="relative overflow-hidden pb-16 pt-20 md:pb-28 md:pt-32"
+  style={{ perspective: "1000px" }}
+  onMouseMove={handleMouseMove}
+>
+  {/* Background with diagonal cut */}
+  <div className="absolute inset-0 -z-20">
+    <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent clip-diagonal" />
+  </div>
 
-      {/* Grid powering up background */}
-<div className="absolute inset-0 -z-10">
-  <div className="grid-bg absolute inset-0" />
-  <div className="grid-glow absolute inset-0" />
-</div>
+  {/* Grid powering up background */}
+  <div className="absolute inset-0 -z-10">
+    <div className="grid-bg absolute inset-0" />
+    <div className="grid-glow absolute inset-0" />
+  </div>
 
-
-      {/* Hero Content */}
-      <div className="container px-4 md:px-6">
+  <div className="container px-4 md:px-6">
+    <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
+      {/* Left Side - Text */}
+      <motion.div
+        ref={heroRef}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col space-y-6 text-left"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        {/* Badge */}
         <motion.div
-          ref={heroRef}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col items-center justify-center space-y-8 text-center hover-3d"
-          style={{ transformStyle: "preserve-3d" }}
+          variants={itemVariants}
+          className="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 ring-1 ring-emerald-500/20 border border-emerald-500/20"
         >
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-6 py-2 text-sm font-medium text-emerald-600 ring-1 ring-emerald-500/20 hover-3d border border-emerald-500/20"
-            onMouseEnter={(e) => handle3DHover(e.currentTarget, true)}
-            onMouseLeave={(e) => handle3DHover(e.currentTarget, false)}
-          >
-            <Shield className="h-4 w-4" />
-            100% Private & Secure
-          </motion.div>
-
-          <motion.h1
-            variants={itemVariants}
-            className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl hover-3d"
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            Analyze Your Data{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Without Compromise
-            </span>
-          </motion.h1>
-
-          <motion.p
-            variants={itemVariants}
-            className="max-w-[700px] text-lg text-muted-foreground md:text-xl hover-3d"
-            style={{
-              transformStyle: "preserve-3d",
-              z: 50,
-            }}
-          >
-            Your data stays 100% private on your device. Upload Excel and CSV files for instant AI-powered analysis
-            with beautiful visualizations - no data storage, no privacy concerns, no compromises.
-          </motion.p>
-
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-col gap-4 sm:flex-row hover-3d"
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            <motion.div
-              whileHover={{
-                scale: 1.05,
-                rotateX: -5,
-                rotateY: 5,
-                z: 30,
-              }}
-              whileTap={{
-                scale: 0.95,
-                rotateX: 5,
-                rotateY: -5,
-              }}
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <Button
-                asChild
-                size="lg"
-                className="group rounded-full px-8 py-6 text-base shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Link href={getStartedLink}>
-                  {user ? "Go to Dashboard" : "Start Analyzing"}
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-            </motion.div>
-
-            <motion.div
-              whileHover={{
-                scale: 1.05,
-                rotateX: 5,
-                rotateY: -5,
-                z: 30,
-              }}
-              whileTap={{
-                scale: 0.95,
-                rotateX: -5,
-                rotateY: 5,
-              }}
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-full px-8 py-6 text-base glass-effect hover:bg-primary/5 transition-all duration-300 bg-transparent"
-              >
-                <Link href="#pricing">View Pricing</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
+          <Shield className="h-4 w-4" />
+          100% Private & Secure
         </motion.div>
-      </div>
-    </section>
+
+        {/* Heading */}
+        <motion.h1
+          variants={itemVariants}
+          className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl"
+        >
+          Analyze Your Data{" "}
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Without Compromise
+          </span>
+        </motion.h1>
+
+        {/* Description */}
+        <p className="max-w-[550px] text-base text-muted-foreground md:text-lg">
+          Your data stays 100% private on your device. Upload Excel and CSV files for instant AI-powered analysis with
+          beautiful visualizations — no storage, no privacy concerns, no compromises.
+        </p>
+
+        {/* Buttons */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col gap-4 sm:flex-row"
+        >
+          <Button
+            asChild
+            size="lg"
+            className="group rounded-full px-6 py-4 text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Link href={getStartedLink}>
+              {user ? "Go to Dashboard" : "Start Analyzing"}
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="rounded-full px-6 py-4 text-sm glass-effect hover:bg-primary/5 transition-all duration-300 bg-transparent"
+            asChild
+          >
+            <Link href="#pricing">View Pricing</Link>
+          </Button>
+        </motion.div>
+      </motion.div>
+
+      {/* Right Side - Image */}
+      <motion.div
+        variants={itemVariants}
+        className="relative flex justify-center md:justify-end"
+      >
+        <img
+          src="/hero-illustration.png"
+          alt="Data visualization preview"
+          className="w-full max-w-md rounded-xl shadow-lg"
+        />
+      </motion.div>
+    </div>
+  </div>
+</section>
+
 
 
         {/* Trusted By Section */}
-        <section className="py-12 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-y border-purple-200/20">
+        {/* <section className="py-12 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-y border-purple-200/20">
           <div className="container px-4 md:px-6">
             <div className="text-center mb-8">
               <p className="text-sm font-medium text-muted-foreground mb-6">Trusted by teams at</p>
@@ -415,7 +446,7 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Privacy Trust Section */}
         <section className="py-16 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 border-y border-emerald-200/20">
@@ -533,81 +564,86 @@ export function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section
-          className="features-section py-24 bg-gradient-to-b from-muted/30 to-background"
-          style={{ perspective: "1200px" }}
+       <section className="relative py-32 bg-gradient-to-b from-muted/30 via-background to-background">
+      <div className="container relative px-4 md:px-6 flex flex-col items-center">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-20 text-center max-w-3xl mx-auto"
         >
-          <div className="container px-4 md:px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mb-16 text-center hover-3d"
-            >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4 hover-3d">
-                Privacy-First Data Analysis
-              </h2>
-              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground hover-3d">
-                Advanced analytics capabilities with uncompromising privacy protection built into every feature.
-              </p>
-            </motion.div>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
+            Privacy-First Data Analysis
+          </h2>
+          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
+            Advanced analytics with uncompromising privacy protection built into every feature.
+          </p>
+        </motion.div>
 
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {features.map((feature, i) => (
-                <div
-                  key={i}
-                  className={`feature-card group relative overflow-hidden rounded-3xl bg-gradient-to-br ${feature.gradient} p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-border/50 hover-3d backdrop-blur-sm`}
-                  onMouseEnter={(e) => handle3DHover(e.currentTarget, true)}
-                  onMouseLeave={(e) => handle3DHover(e.currentTarget, false)}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  <div className="absolute top-4 right-4">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-primary border border-white/30 backdrop-blur-sm">
-                      {feature.highlight}
-                    </span>
+        {/* Circular Dial */}
+        <div className="relative w-[500px] h-[500px] flex items-center justify-center">
+          {/* Center Dial */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="relative z-10 w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 shadow-2xl flex items-center justify-center text-white font-bold text-lg"
+          >
+            Secure Data Core
+          </motion.div>
+
+          {/* Features around the circle */}
+          {features.map((feature, i) => {
+            const angle = (i / features.length) * (2 * Math.PI);
+            const radius = 180; // distance from center
+            const x = Math.cos(angle) * radius + 250; // 250 = half of container size
+            const y = Math.sin(angle) * radius + 250;
+
+            const Icon = feature.icon; // ✅ Extract icon component
+
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="absolute"
+                style={{ left: x, top: y, transform: "translate(-50%, -50%)" }}
+              >
+                <div className="flex flex-col items-center text-center w-40">
+                  <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-md">
+                    <Icon className="h-6 w-6" /> {/* ✅ Properly rendered */}
                   </div>
-
-                  <div className="relative z-10">
-                    <motion.div
-                      className="mb-6 inline-flex rounded-2xl bg-white/90 dark:bg-gray-900/90 p-4 shadow-lg hover-3d backdrop-blur-sm border border-white/20"
-                      whileHover={{
-                        rotateY: 180,
-                        scale: 1.1,
-                        transition: { duration: 0.6 },
-                      }}
-                      style={{ transformStyle: "preserve-3d" }}
-                    >
-                      <feature.icon className="h-7 w-7 text-primary" />
-                    </motion.div>
-                    <h3 className="mb-4 text-xl font-bold hover-3d text-foreground">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed hover-3d text-sm">{feature.description}</p>
-                  </div>
-
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
+                  <h3 className="text-sm font-semibold">{features1.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.description}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
 
         {/* Use Cases Section */}
-        <section className="py-24 bg-gradient-to-b from-purple-50/30 to-background dark:from-purple-950/10">
-          <div className="container px-4 md:px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mb-16 text-center"
-            >
+       <section className="py-24 bg-gradient-to-b from-purple-50/30 to-background dark:from-purple-950/10">
+      <div className="container px-4 md:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-16 text-center"
+        >
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
-                An AnalyzeX for every job
+            An AnalyzeX for every job
               </h2>
-            </motion.div>
+        </motion.div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
                 {
                   title: "Finance Analyst",
@@ -646,37 +682,39 @@ export function LandingPage() {
                   gradient: "from-purple-500/20 to-emerald-500/20",
                 },
               ].map((useCase, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${useCase.gradient} p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/20 hover:border-purple-300/30`}
-                >
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.03 }}
+                className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${useCase.gradient} p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/20 hover:border-purple-300/30`}
+              >
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
+                  <div className="flex-shrink-0">
                       <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/90 dark:bg-gray-900/90 shadow-lg">
                         <useCase.icon className="h-6 w-6 text-purple-600" />
                       </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2">{useCase.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-4">{useCase.description}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-purple-600 hover:text-purple-700 p-0 h-auto font-medium"
-                      >
-                        Try it out →
-                      </Button>
-                    </div>
                   </div>
-                </motion.div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-2">{useCase.title}</h3>
+                    <p className="text-muted-foreground text-sm mb-4">{useCase.description}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-purple-600 hover:text-purple-700 p-0 h-auto font-medium"
+                    >
+                      Try it out →
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
               ))}
-            </div>
-          </div>
-        </section>
+        </div>
+      </div>
+    </section>
+
 
         {/* Testimonials Section */}
         <section className="py-24">
