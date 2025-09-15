@@ -6,26 +6,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import {
-  BarChart3,
-  TrendingUp,
-  Activity,
-  Target,
-  Home,
-  Upload,
-  Settings,
-  HelpCircle,
-  User,
-  Database,
-  Menu,
-  X,
-} from "lucide-react"
+import { BarChart3, TrendingUp, Activity, Target, Save, Check } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 
 import { CorrelationMatrix } from "./correlation-matrix"
 import { EnhancedTrendAnalysis } from "./enhanced-trend-analysis"
 import { CustomChartBuilder } from "./custom-chart-builder"
-import { AIDashboardGenerator } from "./ai-dashboard-generator"
+import AIDashboardGenerator from "./ai-dashboard-generator"
 import { ReportsGenerator } from "./reports-generator"
+import { getCurrentAnalysis, updateCurrentAnalysis, saveDashboardContent, markAsSaved } from "@/lib/data-persistence"
 
 export function DataAnalysisPage() {
   const router = useRouter()
@@ -38,6 +27,10 @@ export function DataAnalysisPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [dashboardContent, setDashboardContent] = useState<any>({})
   const sidebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -58,18 +51,29 @@ export function DataAnalysisPage() {
 
   useEffect(() => {
     try {
-      // Load analysis results from sessionStorage
-      const resultsString = sessionStorage.getItem("analysisResults")
+      const currentSession = getCurrentAnalysis()
+      let results = null
+      let analysisId = null
 
-      if (!resultsString) {
-        console.log("No analysis results found, redirecting to upload page")
-        router.push("/app/upload")
-        return
+      if (currentSession && currentSession.analysisResults) {
+        console.log("[v0] Loading from current session:", currentSession.currentAnalysisId)
+        results = currentSession.analysisResults
+        analysisId = currentSession.currentAnalysisId
+        setIsSaved(currentSession.isSaved || false)
+        setDashboardContent(currentSession.dashboardContent || {})
+      } else {
+        const resultsString = sessionStorage.getItem("analysisResults")
+
+        if (!resultsString) {
+          console.log("No analysis results found, redirecting to upload page")
+          router.push("/app/upload")
+          return
+        }
+
+        results = JSON.parse(resultsString)
       }
 
-      const results = JSON.parse(resultsString)
-
-      console.log("[v0] Raw sessionStorage data:", results)
+      console.log("[v0] Raw analysis data:", results)
       console.log("[v0] Available keys in results:", Object.keys(results))
 
       if (results.data) {
@@ -92,7 +96,6 @@ export function DataAnalysisPage() {
         console.log("[v0] First few records from results.rows:", results.rows.slice(0, 3))
       }
 
-      // Verify we have valid data
       if (!results.fileName) {
         console.error("Invalid analysis results:", results)
         setError("The analysis results are invalid. Please upload your file again.")
@@ -100,12 +103,15 @@ export function DataAnalysisPage() {
         return
       }
 
+      if (analysisId) {
+        setCurrentAnalysisId(analysisId)
+      }
+
       let dataArray =
         results.rawData || results.rows || results.data || results.previewData || results.processedData || []
 
       if (!Array.isArray(dataArray) && typeof dataArray === "object") {
         console.log("[v0] Data is not array, checking for nested data:", dataArray)
-        // Try to find array data in nested structure
         const possibleArrays = Object.values(dataArray).filter((val) => Array.isArray(val))
         if (possibleArrays.length > 0) {
           dataArray = possibleArrays[0] as any[]
@@ -128,7 +134,6 @@ export function DataAnalysisPage() {
         console.warn(`[v0] Data length mismatch: expected ${results.rowCount} rows but got ${dataArray.length} rows`)
         console.log("[v0] Checking if full dataset is available in other properties...")
 
-        // Try to find the full dataset
         const fullDataset = results.rawData || results.rows
         if (fullDataset && Array.isArray(fullDataset) && fullDataset.length === results.rowCount) {
           console.log(`[v0] Found full dataset with ${fullDataset.length} rows, using it instead`)
@@ -136,11 +141,9 @@ export function DataAnalysisPage() {
         }
       }
 
-      // Set the data and filename
       setData(dataArray)
       setFileName(results.fileName)
 
-      // Detect column types from the data
       if (dataArray.length > 0) {
         const allKeys = Object.keys(dataArray[0])
 
@@ -151,7 +154,6 @@ export function DataAnalysisPage() {
 
           if (values.length === 0) return false
 
-          // Check if at least 90% of non-empty values are numeric
           const numericValues = values.filter((val: any) => {
             const num = Number(val)
             return !isNaN(num) && isFinite(num)
@@ -170,24 +172,19 @@ export function DataAnalysisPage() {
           if (values.length === 0) return false
 
           const uniqueValues = [...new Set(values)]
-          // Consider categorical if has reasonable number of unique values (not too many, not too few)
           return uniqueValues.length > 1 && uniqueValues.length <= Math.min(50, values.length * 0.5)
         })
 
         const dateColumns = allKeys.filter((key) => {
           const isDateName = /^(date|time|month_number|year|day|created|updated|timestamp)$/i.test(key)
 
-          // Only consider it a date column if the name explicitly suggests it's date-related
-          // and it's not already classified as numeric
           if (!isDateName || numeric.includes(key)) return false
 
-          // Additional check: if it's month_number, verify it contains reasonable month values
           if (key.toLowerCase() === "month_number") {
             const values = dataArray
               .map((row: { [x: string]: any }) => row[key])
               .filter((val: string | null | undefined) => val !== null && val !== undefined && val !== "")
 
-            // Check if values are reasonable month numbers (1-12 or similar)
             const monthValues = values.filter((val: any) => {
               const num = Number(val)
               return !isNaN(num) && num >= 1 && num <= 12
@@ -240,7 +237,50 @@ export function DataAnalysisPage() {
     }
   }, [router])
 
-  // Show loading state
+  const handleAnalysisUpdate = (updates: any) => {
+    if (currentAnalysisId) {
+      const updatedContent = { ...dashboardContent, ...updates }
+      setDashboardContent(updatedContent)
+      saveDashboardContent(updatedContent)
+
+      const success = updateCurrentAnalysis(updates)
+      if (success) {
+        console.log("[v0] Analysis updated in session:", updates)
+      }
+    }
+  }
+
+  const handleSaveAnalysis = async () => {
+    if (!currentAnalysisId) return
+
+    setIsSaving(true)
+    try {
+      const success = markAsSaved(currentAnalysisId)
+      if (success) {
+        setIsSaved(true)
+        toast({
+          title: "Analysis Saved",
+          description: "Your analysis has been saved to history successfully.",
+        })
+      } else {
+        toast({
+          title: "Save Failed",
+          description: "Failed to save analysis. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error saving analysis:", error)
+      toast({
+        title: "Save Failed",
+        description: "An error occurred while saving the analysis.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -252,7 +292,6 @@ export function DataAnalysisPage() {
     )
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -277,28 +316,58 @@ export function DataAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-     
-
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="px-6 py-4">
             <div className="flex items-center gap-4">
-              {/* <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
-                <Menu className="h-5 w-5" />
-              </Button> */}
-
               <div className="space-y-1 flex-1">
                 <h1 className="text-2xl font-bold tracking-tight">Data Analysis</h1>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="font-medium">{fileName}</span>
                   <Separator orientation="vertical" className="h-4" />
                   <span>Analyzed locally on your device</span>
+                  {isSaved ? (
+                    <>
+                      <Separator orientation="vertical" className="h-4" />
+                      <span className="text-green-600 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Saved to history
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Separator orientation="vertical" className="h-4" />
+                      <span className="text-amber-600">Not saved</span>
+                    </>
+                  )}
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleSaveAnalysis}
+                  disabled={isSaved || isSaving}
+                  variant={isSaved ? "outline" : "default"}
+                  size="sm"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                      Saving...
+                    </>
+                  ) : isSaved ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Saved
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Analysis
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-
-            {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <div className="p-2 bg-blue-100 text-blue-600 rounded-md">
@@ -348,8 +417,6 @@ export function DataAnalysisPage() {
             </div>
           </div>
         </div>
-
-        {/* Main Content */}
         <div className="flex-1 px-6 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
@@ -369,7 +436,6 @@ export function DataAnalysisPage() {
                 Reports
               </TabsTrigger>
             </TabsList>
-
             <TabsContent value="ai-dashboard" className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -381,33 +447,32 @@ export function DataAnalysisPage() {
                     This Quarter
                   </Badge>
                 </div>
-
                 <AIDashboardGenerator
                   data={data}
                   numericColumns={numericColumns}
                   categoricalColumns={categoricalColumns}
                   fileName={fileName}
+                  onAnalysisUpdate={handleAnalysisUpdate}
+                  existingContent={dashboardContent.aiDashboard}
                 />
               </div>
             </TabsContent>
-
             <TabsContent value="correlation" className="space-y-6">
               <CorrelationMatrix />
             </TabsContent>
-
             <TabsContent value="trends" className="space-y-6">
               <EnhancedTrendAnalysis />
             </TabsContent>
-
             <TabsContent value="my-charts" className="space-y-6">
               <CustomChartBuilder
                 data={data}
                 columns={data.length > 0 ? Object.keys(data[0]) : []}
                 numericColumns={numericColumns}
                 categoricalColumns={categoricalColumns}
+                onChartsUpdate={(charts) => handleAnalysisUpdate({ customCharts: charts })}
+                existingCharts={dashboardContent.customCharts}
               />
             </TabsContent>
-
             <TabsContent value="reports" className="space-y-6">
               <ReportsGenerator
                 data={data}

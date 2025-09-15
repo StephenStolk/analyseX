@@ -12,6 +12,7 @@ import { analyzeFile } from "@/lib/data-analyzer"
 import { useToast } from "@/components/ui/use-toast"
 import { createClient } from "@/lib/supabase/client"
 import { Input } from "@/components/ui/input"
+import { saveAnalysis } from "@/lib/data-persistence"
 
 declare global {
   interface Window {
@@ -39,58 +40,56 @@ export function DataUploadPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [sourceUrl, setSourceUrl] = useState("")
 
- useEffect(() => {
-  const init = async () => {
-    const supabase = createClient()
-    const { data } = await supabase.auth.getUser()
-    if (!data.user) {
-      router.push("/auth/login?redirect=/app/upload")
-      return
-    }
-    setUserId(data.user.id)
+  useEffect(() => {
+    const init = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      if (!data.user) {
+        router.push("/auth/login?redirect=/app/upload")
+        return
+      }
+      setUserId(data.user.id)
 
-    try {
-      const res = await fetch(`/api/subscriptions/usage?userId=${data.user.id}`, {
-        credentials: "include",
-      })
-
-      if (!res.ok) throw new Error("Failed to fetch usage")
-
-      const json = await res.json()
-
-      // Normalize field names for UI
-      setUsageInfo({
-        datasetsUsed: json.datasetsUsed ?? json.used ?? 0,
-        datasetsLimit: json.datasetsLimit ?? json.limit ?? 0,
-        isUnlimited: json.isUnlimited ?? false,
-        canGenerate: json.canGenerate ?? json.canGenerate ?? false,
-        hasSubscription: json.hasSubscription ?? true,
-      })
-
-      setCanGenerate(!!json.canGenerate)
-
-      if (!json.hasSubscription) {
-        toast({
-          title: "Subscription Required",
-          description: "Please select a plan to upload datasets.",
-          variant: "destructive",
+      try {
+        const res = await fetch(`/api/subscriptions/usage?userId=${data.user.id}`, {
+          credentials: "include",
         })
+
+        if (!res.ok) throw new Error("Failed to fetch usage")
+
+        const json = await res.json()
+
+        // Normalize field names for UI
+        setUsageInfo({
+          datasetsUsed: json.datasetsUsed ?? json.used ?? 0,
+          datasetsLimit: json.datasetsLimit ?? json.limit ?? 0,
+          isUnlimited: json.isUnlimited ?? false,
+          canGenerate: json.canGenerate ?? json.canGenerate ?? false,
+          hasSubscription: json.hasSubscription ?? true,
+        })
+
+        setCanGenerate(!!json.canGenerate)
+
+        if (!json.hasSubscription) {
+          toast({
+            title: "Subscription Required",
+            description: "Please select a plan to upload datasets.",
+            variant: "destructive",
+          })
+          router.push("/app")
+          return
+        }
+      } catch (error) {
+        console.error("Error checking usage:", error)
         router.push("/app")
         return
       }
-    } catch (error) {
-      console.error("Error checking usage:", error)
-      router.push("/app")
-      return
+
+      setIsLoading(false)
     }
 
-    setIsLoading(false)
-  }
-
-  init()
-}, [router, toast])
-
-
+    init()
+  }, [router, toast])
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -126,100 +125,109 @@ export function DataUploadPage() {
   }
 
   const handleUpload = async () => {
-  if (!file || !userId) return
+    if (!file || !userId) return
 
-  if (!canGenerate) {
-    if (usageInfo && usageInfo.datasetsUsed >= usageInfo.datasetsLimit && !usageInfo.isUnlimited) {
-      toast({
-        title: "Upload limit reached",
-        description: `You've used all ${usageInfo.datasetsLimit} uploads in your plan. Please upgrade to continue.`,
-        variant: "destructive",
-      })
-      router.push("/app")
-    } else {
-      toast({
-        title: "Cannot upload",
-        description: "Please check your subscription status.",
-        variant: "destructive",
-      })
-    }
-    return
-  }
-
-  setIsUploading(true)
-  setUploadProgress(0)
-
-  try {
-    // Optional: show progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval)
-          return 90
-        }
-        return prev + 5
-      })
-    }, 100)
-
-    // Upload to Supabase Storage (optional)
-    try {
-      const supabase = createClient()
-      const { data: upRes, error: upErr } = await supabase.storage
-        .from("datasets")
-        .upload(`${userId}/${Date.now()}_${file.name}`, file, { upsert: false })
-      if (upErr) {
-        // ignore if bucket missing; keep local-only analysis
+    if (!canGenerate) {
+      if (usageInfo && usageInfo.datasetsUsed >= usageInfo.datasetsLimit && !usageInfo.isUnlimited) {
+        toast({
+          title: "Upload limit reached",
+          description: `You've used all ${usageInfo.datasetsLimit} uploads in your plan. Please upgrade to continue.`,
+          variant: "destructive",
+        })
+        router.push("/app")
+      } else {
+        toast({
+          title: "Cannot upload",
+          description: "Please check your subscription status.",
+          variant: "destructive",
+        })
       }
-    } catch {
-      // ignore
-    }
-
-    // Analyze file locally
-    const results = await analyzeFile(file)
-    sessionStorage.setItem("analysisResults", JSON.stringify(results))
-
-    // Increment usage on server
-    const usageRes = await fetch("/api/subscriptions/usage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    })
-
-    if (!usageRes.ok) {
-      const err = await usageRes.json().catch(() => ({}))
-      toast({
-        title: "Upload limit reached",
-        description: err?.error || "Please upgrade your plan to upload more datasets.",
-        variant: "destructive",
-      })
-      setIsUploading(false)
-      clearInterval(progressInterval)
       return
     }
 
-    // Update UI with latest usage
-    const usageJson = await usageRes.json()
-    setUsageInfo(usageJson)
-    setCanGenerate(!!usageJson.canGenerate)
-
-    clearInterval(progressInterval)
-    setUploadProgress(100)
-
-    setTimeout(() => {
-      router.push("/app/analysis")
-    }, 500)
-  } catch (error) {
-    console.error("Analysis error:", error)
-    setAnalysisError("Error analyzing file. Please try a different file.")
-    setIsUploading(false)
+    setIsUploading(true)
     setUploadProgress(0)
-    toast({
-      title: "Analysis Error",
-      description: "There was a problem analyzing your file. Please try again with a different file.",
-      variant: "destructive",
-    })
+
+    try {
+      // Optional: show progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return 90
+          }
+          return prev + 5
+        })
+      }, 100)
+
+      // Upload to Supabase Storage (optional)
+      try {
+        const supabase = createClient()
+        const { data: upRes, error: upErr } = await supabase.storage
+          .from("datasets")
+          .upload(`${userId}/${Date.now()}_${file.name}`, file, { upsert: false })
+        if (upErr) {
+          // ignore if bucket missing; keep local-only analysis
+        }
+      } catch {
+        // ignore
+      }
+
+      // Analyze file locally
+      const results = await analyzeFile(file)
+
+      sessionStorage.setItem("analysisResults", JSON.stringify(results))
+
+      // Save to persistent history with metadata
+      const analysisId = saveAnalysis(file.name, results, {
+        fileSize: file.size,
+        analysisType: ["basic", "statistical"],
+      })
+
+      console.log(`[v0] Analysis saved to history with ID: ${analysisId}`)
+
+      // Increment usage on server
+      const usageRes = await fetch("/api/subscriptions/usage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (!usageRes.ok) {
+        const err = await usageRes.json().catch(() => ({}))
+        toast({
+          title: "Upload limit reached",
+          description: err?.error || "Please upgrade your plan to upload more datasets.",
+          variant: "destructive",
+        })
+        setIsUploading(false)
+        clearInterval(progressInterval)
+        return
+      }
+
+      // Update UI with latest usage
+      const usageJson = await usageRes.json()
+      setUsageInfo(usageJson)
+      setCanGenerate(!!usageJson.canGenerate)
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+
+      setTimeout(() => {
+        router.push("/app/analysis")
+      }, 500)
+    } catch (error) {
+      console.error("Analysis error:", error)
+      setAnalysisError("Error analyzing file. Please try a different file.")
+      setIsUploading(false)
+      setUploadProgress(0)
+      toast({
+        title: "Analysis Error",
+        description: "There was a problem analyzing your file. Please try again with a different file.",
+        variant: "destructive",
+      })
+    }
   }
-}
 
   const pickFromDrive = async () => {
     try {
@@ -303,13 +311,12 @@ export function DataUploadPage() {
               <p className="mt-4 text-muted-foreground">
                 Upload Excel or CSV to begin analysis.
                 {usageInfo && (
-  <span className="block mt-2 text-sm">
-    {canGenerate
-      ? `${usageInfo.datasetsLimit - usageInfo.datasetsUsed} uploads remaining in your plan`
-      : "Upload limit reached - please upgrade your plan"}
-  </span>
-)}
-
+                  <span className="block mt-2 text-sm">
+                    {canGenerate
+                      ? `${usageInfo.datasetsLimit - usageInfo.datasetsUsed} uploads remaining in your plan`
+                      : "Upload limit reached - please upgrade your plan"}
+                  </span>
+                )}
               </p>
             </div>
 
@@ -339,13 +346,13 @@ export function DataUploadPage() {
                     onChange={handleFileChange}
                   />
                   <Button
-  onClick={() => fileInputRef.current?.click()}
-  className="rounded-full"
-  disabled={!canGenerate}
->
-  <Upload className="mr-2 h-4 w-4" />
-  Browse Files
-</Button>
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-full"
+                    disabled={!canGenerate}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Browse Files
+                  </Button>
 
                   {!canGenerate && (
                     <div className="mt-4 text-center">

@@ -236,7 +236,7 @@ export function LandingPage() {
       z: 0,
       transition: {
         duration: 0.8,
-        ease: [0, 0, 0, 0],
+        ease: "easeInOut", // use a valid string easing
       },
     },
   }

@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Upload, User, Settings, Search } from "lucide-react"
+import { Home, Upload, User, Settings, Search, History } from "lucide-react"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -11,8 +11,9 @@ export function AppSidebar() {
   const items = [
     { title: "Home", icon: Home, href: "/app" },
     { title: "Upload", icon: Upload, href: "/app/upload" },
-    { title: "Profile", icon: User, href: "/app/profile" },
     { title: "Analysis", icon: Search, href: "/app/analysis" },
+    { title: "History", icon: History, href: "/app/history" },
+    { title: "Profile", icon: User, href: "/app/profile" },
     { title: "Settings", icon: Settings, href: "/app/settings" },
   ]
 
@@ -25,7 +26,6 @@ export function AppSidebar() {
       aria-label="Main sidebar"
     >
       <div className="flex flex-col h-full py-20">
-
         {/* Menu - make it scrollable if many items */}
         <nav className="flex-1 px-1">
           <ul className="flex flex-col gap-1">
@@ -55,8 +55,6 @@ export function AppSidebar() {
             })}
           </ul>
         </nav>
-
-       
       </div>
     </aside>
   )
