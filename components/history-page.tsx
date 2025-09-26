@@ -62,6 +62,8 @@ export function HistoryPage() {
             return item.aiInsights || (item.chatMessages && item.chatMessages?.length > 0)
           case "charts":
             return item.customCharts && item.customCharts.length > 0
+          case "dashboard":
+            return item.dashboardContent && item.dashboardContent.aiDashboard
           case "large":
             return item.metadata.rowCount > 1000
           default:
@@ -160,6 +162,51 @@ export function HistoryPage() {
     }
   }
 
+  const handleExportToJSON = () => {
+    try {
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        totalAnalyses: history.length,
+        storageInfo,
+        analyses: history.map((item) => ({
+          id: item.id,
+          fileName: item.fileName,
+          timestamp: item.timestamp,
+          metadata: item.metadata,
+          hasAiInsights: !!item.aiInsights,
+          customChartsCount: item.customCharts?.length || 0,
+          chatMessagesCount: item.chatMessages?.length || 0,
+          // Include basic summary data but not full datasets for privacy/size
+          summary: item.summary || null,
+        })),
+      }
+
+      const dataStr = JSON.stringify(exportData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: "application/json" })
+
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `analysis-history-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: "Success",
+        description: "History exported to JSON successfully",
+      })
+    } catch (error) {
+      console.error("Error exporting to JSON:", error)
+      toast({
+        title: "Error",
+        description: "Failed to export to JSON",
+        variant: "destructive",
+      })
+    }
+  }
+
   const getAnalysisTypeColor = (types: string[]) => {
     if (types.includes("ai")) return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
     if (types.includes("advanced")) return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
@@ -190,6 +237,10 @@ export function HistoryPage() {
           <Button onClick={loadHistory} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
+          </Button>
+          <Button onClick={handleExportToJSON} variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export JSON
           </Button>
           <Button onClick={handleExportToPDF} size="sm">
             <Download className="h-4 w-4 mr-2" />
@@ -275,6 +326,13 @@ export function HistoryPage() {
                 onClick={() => setSelectedFilter("charts")}
               >
                 With Charts
+              </Button>
+              <Button
+                variant={selectedFilter === "dashboard" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedFilter("dashboard")}
+              >
+                Dashboards
               </Button>
               <Button
                 variant={selectedFilter === "large" ? "default" : "outline"}
@@ -372,6 +430,12 @@ export function HistoryPage() {
                         {item.customCharts.length} Custom Charts
                       </span>
                     )}
+                    {item.dashboardContent && item.dashboardContent.aiDashboard && (
+                      <span className="flex items-center gap-1">
+                        <Database className="h-4 w-4" />
+                        AI Dashboard
+                      </span>
+                    )}
                     {item.chatMessages && item.chatMessages.length > 0 && (
                       <span className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
@@ -455,6 +519,11 @@ export function HistoryPage() {
                   {item.customCharts && item.customCharts.length > 0 && (
                     <p>
                       <strong>Custom Charts:</strong> {item.customCharts.length} charts created
+                    </p>
+                  )}
+                  {item.dashboardContent && item.dashboardContent.aiDashboard && (
+                    <p>
+                      <strong>AI Dashboard:</strong> Available
                     </p>
                   )}
                 </div>

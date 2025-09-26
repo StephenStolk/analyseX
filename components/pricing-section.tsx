@@ -139,7 +139,7 @@ export function PricingSection() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-muted/20">
+    <section className="py-20 bg-white dark:bg-background">
       <div className="container px-4 md:px-6">
         {/* Header */}
         <motion.div
@@ -149,10 +149,12 @@ export function PricingSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl mb-4">
+          <h2 className="text-4xl font-serif font-bold tracking-tighter sm:text-5xl md:text-6xl mb-4 text-black dark:text-white">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">Power Your Data Decisions</p>
+          <p className="text-xl text-muted-foreground dark:text-gray-300 mb-8 max-w-2xl mx-auto font-sans">
+            Power Your Data Decisions
+          </p>
 
           {/* Currency and Billing Toggle */}
           <div className="flex items-center justify-center gap-6 mb-8">
@@ -161,7 +163,7 @@ export function PricingSection() {
                 variant={currency === "USD" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setCurrency("USD")}
-                className="rounded-full"
+                className="rounded-full bg-black text-white hover:bg-white hover:text-black border-black"
               >
                 USD ($)
               </Button>
@@ -169,7 +171,7 @@ export function PricingSection() {
                 variant={currency === "INR" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setCurrency("INR")}
-                className="rounded-full"
+                className="rounded-full bg-black text-white hover:bg-white hover:text-black border-black"
               >
                 INR (₹)
               </Button>
@@ -179,10 +181,10 @@ export function PricingSection() {
 
             <div className="flex items-center gap-3">
               <span className={`text-sm ${!isYearly ? "font-medium" : "text-muted-foreground"}`}>Monthly</span>
-              <Switch checked={isYearly} onCheckedChange={setIsYearly} className="data-[state=checked]:bg-primary" />
+              <Switch checked={isYearly} onCheckedChange={setIsYearly} className="data-[state=checked]:bg-black" />
               <span className={`text-sm ${isYearly ? "font-medium" : "text-muted-foreground"}`}>
                 Yearly
-                <Badge variant="secondary" className="ml-2 text-xs">
+                <Badge className="ml-2 text-xs">
                   2 months free
                 </Badge>
               </span>
@@ -199,12 +201,10 @@ export function PricingSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className={`relative ${tier.popular ? "lg:scale-105" : ""}`}
+              className="relative"
             >
               <Card
-                className={`h-full rounded-3xl border-2 transition-all hover:shadow-lg ${
-                  tier.popular ? "border-primary shadow-lg" : "border-border"
-                }`}
+                className={`h-full rounded-3xl border-2 transition-all hover:shadow-lg border-black dark:border-white`}
               >
                 {tier.badge && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -218,16 +218,16 @@ export function PricingSection() {
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
                     <div
-                      className={`p-3 rounded-full ${tier.popular ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                      className={`p-3 rounded-full ${tier.popular ? "bg-black text-white" : "bg-gray-200 text-black"}`}
                     >
                       <tier.icon className="w-6 h-6" />
                     </div>
                   </div>
-                  <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                  <CardDescription className="text-base">{tier.description}</CardDescription>
+                  <CardTitle className="text-2xl font-serif font-bold">{tier.name}</CardTitle>
+                  <CardDescription className="text-base font-sans">{tier.description}</CardDescription>
 
                   <div className="mt-4">
-                    <div className="text-4xl font-bold">
+                    <div className="text-4xl font-bold font-serif text-black dark:text-white">
                       {formatPrice(tier.priceUSD, tier.priceINR)}
                       {tier.priceUSD > 0 && (
                         <span className="text-lg font-normal text-muted-foreground">
@@ -236,9 +236,7 @@ export function PricingSection() {
                       )}
                     </div>
                     {getSavings(tier.priceUSD, tier.priceINR) && (
-                      <div className="text-sm text-green-600 font-medium mt-1">
-                        {getSavings(tier.priceUSD, tier.priceINR)}
-                      </div>
+                      <div className="text-sm text-green-600 font-medium mt-1">{getSavings(tier.priceUSD, tier.priceINR)}</div>
                     )}
                   </div>
                 </CardHeader>
@@ -246,7 +244,7 @@ export function PricingSection() {
                 <CardContent className="flex-1">
                   <ul className="space-y-3">
                     {tier.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
+                      <li key={idx} className="flex items-start gap-3 text-black dark:text-white font-sans">
                         <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-sm">{feature}</span>
                       </li>
@@ -255,7 +253,10 @@ export function PricingSection() {
                 </CardContent>
 
                 <CardFooter>
-                  <Button className="w-full rounded-full" variant={tier.ctaVariant} size="lg" asChild>
+                  <Button
+                    className="w-full rounded-full font-sans bg-black text-white hover:bg-white hover:text-black border-black"
+                    asChild
+                  >
                     <Link
                       href={`/checkout?plan=${tier.id}&billing=${isYearly ? "yearly" : "monthly"}&currency=${currency}`}
                     >
@@ -327,7 +328,7 @@ export function PricingSection() {
                 <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg px-4">
                   <AccordionTrigger className="text-left hover:no-underline">
                     <div className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4 text-primary" />
+                      <HelpCircle className="w-4 h-4 text-black" />
                       {faq.question}
                     </div>
                   </AccordionTrigger>
@@ -340,52 +341,56 @@ export function PricingSection() {
 
         {/* Contact Support CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+  viewport={{ once: true }}
+  className="text-center mb-16 mt-24"
+>
+  <Card className="max-w-4xl mx-auto rounded-3xl bg-black/5 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 shadow-lg">
+    <CardContent className="p-8">
+      <h3 className="text-xl font-serif font-bold mb-2 text-black dark:text-white">
+        Need a Custom Solution?
+      </h3>
+      <p className="text-lg font-sans text-muted-foreground dark:text-gray-300 mb-6 py-4">
+        Enterprise customers with specific requirements can contact our team for custom pricing and features. If you have specific requirements or encounter any challenges, our team is available to provide personalized assistance and custom solutions.
+      </p>
+      <div className="flex gap-4 justify-center">
+        <Button
+          asChild
+          className="w-full md:w-auto rounded-xl bg-black text-white hover:bg-white hover:text-black border border-black dark:border-white transition-all duration-300"
         >
-          <Card className="max-w-2xl mx-auto rounded-3xl bg-gradient-to-r from-primary/10 to-primary/5">
-            <CardContent className="p-8">
-              <h3 className="text-xl font-bold mb-2">Need a Custom Solution?</h3>
-              <p className="text-muted-foreground mb-6">
-                Enterprise customers with specific requirements can contact our team for custom pricing and features.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Button asChild className="rounded-full">
-                  <Link href="/contact">Contact Sales</Link>
-                </Button>
-                <Button variant="outline" asChild className="rounded-full bg-transparent">
-                  <Link href="/demo">Book a Demo</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Legal Footer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="text-center text-sm text-muted-foreground"
-        >
-          <p className="mb-2">
-            All prices are exclusive of applicable taxes. By subscribing, you agree to our{" "}
-            <Link href="/terms" className="underline hover:text-foreground">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline hover:text-foreground">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-          <p>We are GDPR compliant and your data is processed securely. Payments processed by Stripe.</p>
-        </motion.div>
+          <Link href="/contact">Contact</Link>
+        </Button>
       </div>
-    </section>
+    </CardContent>
+  </Card>
+</motion.div>
+
+{/* Legal Footer */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+  viewport={{ once: true }}
+  className="text-center text-sm text-muted-foreground dark:text-gray-400"
+>
+  <p className="mb-2 font-sans">
+    All prices are exclusive of applicable taxes. By subscribing, you agree to our{" "}
+    <Link href="/terms" className="underline hover:text-black dark:hover:text-white">
+      Terms of Service
+    </Link>{" "}
+    and{" "}
+    <Link href="/privacy" className="underline hover:text-black dark:hover:text-white">
+      Privacy Policy
+    </Link>
+    .
+  </p>
+  <p className="font-sans">
+    We are GDPR compliant and your data is processed securely. Payments processed by Stripe.
+  </p>
+</motion.div>
+</div>
+</section>
   )
 }

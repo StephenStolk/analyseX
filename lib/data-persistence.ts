@@ -1,4 +1,5 @@
 export interface AnalysisHistoryItem {
+  summary: null
   id: string
   fileName: string
   timestamp: number
@@ -7,6 +8,7 @@ export interface AnalysisHistoryItem {
   customCharts?: any[]
   chatMessages?: any[]
   dashboardContent?: {
+    aiInsights: never[]
     aiDashboard?: any
     correlationMatrix?: any
     trendAnalysis?: any
@@ -338,6 +340,46 @@ export const updateCurrentAnalysis = (updates: any) => {
 export const saveDashboardContent = (content: any) => dataPersistence.saveDashboardContent(content)
 
 export const markAsSaved = (id?: string) => dataPersistence.markAnalysisAsSaved(id)
+
+// Helper function to get analysis results consistently
+export const getAnalysisResults = () => {
+  // First try to get from current session (persistence system)
+  const currentSession = dataPersistence.getCurrentSession()
+  if (currentSession?.analysisResults) {
+    return currentSession.analysisResults
+  }
+
+  // Fallback to direct sessionStorage for backward compatibility
+  const resultsString = sessionStorage.getItem("analysisResults")
+  if (resultsString) {
+    try {
+      return JSON.parse(resultsString)
+    } catch (error) {
+      console.error("Error parsing analysis results from sessionStorage:", error)
+      return null
+    }
+  }
+
+  return null
+}
+
+// Helper to initialize analysis session from sessionStorage
+export const initializeAnalysisSession = (fileName: string, analysisResults: any, options: any = {}) => {
+  const analysisId = dataPersistence.saveAnalysisToHistory(fileName, analysisResults, {
+    ...options,
+    isSaved: false, // Don't save to history yet, just create session
+  })
+
+  return analysisId
+}
+
+// Helper to check if analysis session exists
+export const hasActiveAnalysisSession = () => {
+  const currentSession = dataPersistence.getCurrentSession()
+  const sessionStorageResults = sessionStorage.getItem("analysisResults")
+
+  return !!(currentSession?.analysisResults || sessionStorageResults)
+}
 
 // Auto-cleanup on app load
 if (typeof window !== "undefined") {

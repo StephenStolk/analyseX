@@ -56,6 +56,7 @@ import {
   TrendingDown as TrendingUpDown,
   AlertCircle,
   ZapIcon,
+  ShoppingCart,
 } from "lucide-react"
 import {
   BarChart as RechartsBarChart,
@@ -92,7 +93,8 @@ import {
   type TimeSeriesData,
 } from "@/lib/forecasting-utils"
 import { createClient } from "@/lib/supabase/client"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "@/components/ui/use-toast"
+import { DashboardVersionViewer } from "./dashboard-version-viewer"
 
 interface AIGeneratedDashboard {
   kpis: KPICard[]
@@ -123,7 +125,7 @@ interface KPICard {
   description: string
   icon: any
   priority: "high" | "medium" | "low"
-  category: "performance" | "volume" | "quality" | "efficiency"
+  category: "performance" | "volume" | "quality" | "efficiency" | "finance"
   color: string
   trend?: number[]
   target?: number
@@ -276,11 +278,9 @@ interface AIDashboardGeneratorProps {
   numericColumns: string[]
   categoricalColumns: string[]
   fileName: string
-  onAnalysisUpdate?: (updates: any) => void
-  existingContent?: any
-  subscriptionStatus?: any
-  checkSubscriptionStatus?: () => Promise<void>
-  isCheckingSubscription?: boolean
+  dateColumns: string[]
+  onAnalysisUpdate?: (data: { aiDashboard: AIGeneratedDashboard }) => void // ✅ Modified to accept AIGeneratedDashboard
+  existingContent?: any // ✅ add this
 }
 
 // Enhanced color themes
@@ -372,36 +372,47 @@ const DOMAIN_OPTIONS = [
   { value: "general", label: "General Analysis", icon: BarChart3, description: "General purpose data analysis" },
 ]
 
-export default function AIDashboardGenerator({
+export function AIDashboardGenerator({
   data,
-  fileName,
   numericColumns,
   categoricalColumns,
+  fileName,
   onAnalysisUpdate,
   existingContent,
-  subscriptionStatus,
-  checkSubscriptionStatus,
-  isCheckingSubscription,
 }: AIDashboardGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedContent, setGeneratedContent] = useState<string>("")
+  const [progress, setProgress] = useState(0)
+  const [currentStep, setCurrentStep] = useState("")
+  const [generatedDashboard, setGeneratedDashboard] = useState<AIGeneratedDashboard | null>(null)
   const [selectedTargetColumn, setSelectedTargetColumn] = useState<string>("")
   const [selectedCategoryColumn, setSelectedCategoryColumn] = useState<string>("")
   const [selectedDateColumn, setSelectedDateColumn] = useState<string>("")
   const [selectedDomain, setSelectedDomain] = useState<string>("")
-  const [colorTheme, setColorTheme] = useState<string>("blue")
-  const [chartType, setChartType] = useState<string>("auto")
-  const [analysisType, setAnalysisType] = useState<string>("comprehensive")
-  const [customPrompt, setCustomPrompt] = useState<string>("")
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [dashboardData, setDashboardData] = useState<any>(null)
-  const [isLoadingData, setIsLoadingData] = useState(false)
-  const { toast } = useToast()
-
+  const [colorTheme, setColorTheme] = useState<"default" | "minimal" | "vibrant" | "monochrome">("minimal")
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{
+    hasSubscription: boolean
+    canGenerate: boolean
+    datasetsUsed: number
+    datasetsLimit: number
+    isUnlimited: boolean
+    planName: string
+  } | null>(null)
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [progress, setProgress] = useState<number>(0)
-  const [currentStep, setCurrentStep] = useState<string>("")
-  const [generatedDashboard, setGeneratedDashboard] = useState<AIGeneratedDashboard | null>(null)
+
+  // State for restored content
+  const [kpis, setKpis] = useState<KPICard[]>([])
+  const [trendCharts, setTrendCharts] = useState<ChartData[]>([])
+  const [detailCharts, setDetailCharts] = useState<ChartData[]>([])
+  const [insights, setInsights] = useState<DashboardInsight[]>([])
+  const [summary, setSummary] = useState<string>("")
+  const [summaryTable, setSummaryTable] = useState<SummaryTableData[]>([])
+  const [topPerformers, setTopPerformers] = useState<TopPerformerData[]>([])
+  const [domainContext, setDomainContext] = useState<DomainContext | null>(null)
+  const [forecasts, setForecasts] = useState<ForecastResult[]>([])
+  const [comprehensiveAnalysis, setComprehensiveAnalysis] = useState<any>(null)
+  const [isGenerated, setIsGenerated] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Get current theme colors
   const currentTheme = COLOR_THEMES[colorTheme]
@@ -483,6 +494,110 @@ export default function AIDashboardGenerator({
     selectedDateColumn,
     selectedDomain,
   ])
+
+  useEffect(() => {
+    if (existingContent) {
+      console.log("[v0] Restoring existing dashboard content:", existingContent)
+      if (existingContent.kpis) setKpis(existingContent.kpis)
+      if (existingContent.trendCharts) setTrendCharts(existingContent.trendCharts)
+      if (existingContent.detailCharts) setDetailCharts(existingContent.detailCharts)
+      if (existingContent.insights) setInsights(existingContent.insights)
+      if (existingContent.summary) setSummary(existingContent.summary)
+      if (existingContent.summaryTable) setSummaryTable(existingContent.summaryTable)
+      if (existingContent.topPerformers) setTopPerformers(existingContent.topPerformers)
+      if (existingContent.domainContext) setDomainContext(existingContent.domainContext)
+      if (existingContent.forecasts) setForecasts(existingContent.forecasts)
+      if (existingContent.comprehensiveAnalysis) setComprehensiveAnalysis(existingContent.comprehensiveAnalysis)
+      setIsGenerated(true)
+      setIsLoading(false)
+    }
+  }, [existingContent])
+
+  // Add a small helper near other helpers inside the component scope
+  const mapIconStringToComponent = (name: string) => {
+    const map: Record<string, any> = {
+      Target,
+      BarChart3,
+      TrendingUp,
+      Activity,
+      PieChart,
+      LineChart,
+      Radar,
+      DollarSign,
+      Users,
+      ShoppingCart, // Added ShoppingCart
+      CreditCard,
+    }
+    return map[name] || Target
+  }
+  // </CHANGE>
+
+  const handleLoadVersionData = (versionData: any) => {
+    try {
+      if (versionData.aiDashboard) {
+        const dashboard = versionData.aiDashboard
+
+        // Normalize KPIs' icons
+        const normalizedKpis =
+          (dashboard.kpis || []).map((kpi: any) => ({
+            ...kpi,
+            icon: typeof kpi.icon === "string" ? mapIconStringToComponent(kpi.icon) : kpi.icon,
+          })) || []
+
+        setKpis(normalizedKpis)
+        setTrendCharts(dashboard.trendCharts || [])
+        setDetailCharts(dashboard.detailCharts || [])
+        setInsights(dashboard.insights || [])
+        setSummary(dashboard.summary || "")
+        setSummaryTable(dashboard.summaryTable || [])
+        setTopPerformers(dashboard.topPerformers || [])
+        setDomainContext(dashboard.domainContext || null)
+        setForecasts(dashboard.forecasts || [])
+        setComprehensiveAnalysis(dashboard)
+        setIsGenerated(true)
+
+        // Also reflect into parent persistence so other tabs and history have it
+        onAnalysisUpdate?.({
+          aiDashboard: {
+            ...dashboard,
+            kpis: normalizedKpis,
+          },
+        })
+      }
+
+      // Load AI insights/custom charts from the version (these are persisted too)
+      if ((versionData.aiInsights || versionData.customCharts) && onAnalysisUpdate) {
+        // Call onAnalysisUpdate separately for aiDashboard and for aiInsights/customCharts
+        if (versionData.aiInsights) {
+          onAnalysisUpdate({
+            aiDashboard: generatedDashboard,
+            // @ts-ignore
+            aiInsights: versionData.aiInsights || [],
+          } as any)
+        }
+        if (versionData.customCharts) {
+          onAnalysisUpdate({
+            aiDashboard: generatedDashboard,
+            // @ts-ignore
+            customCharts: versionData.customCharts || [],
+          } as any)
+        }
+      }
+
+      toast({
+        title: "Analysis Loaded",
+        description: "Previous analysis version has been loaded successfully",
+      })
+    } catch (error) {
+      console.error("Error loading version data:", error)
+      toast({
+        title: "Load Failed",
+        description: "Failed to load the selected analysis version",
+        variant: "destructive",
+      })
+    }
+  }
+  // </CHANGE>
 
   const detectDomainContext = (): DomainContext => {
     const allColumns = [...numericColumns, ...categoricalColumns, ...dateColumns].map((col) => col.toLowerCase())
@@ -852,7 +967,7 @@ export default function AIDashboardGenerator({
       skewness: calculateSkewness(targetValues, mean, stdDev),
       kurtosis: calculateKurtosis(targetValues, mean, stdDev),
       outliers: detectOutliers(targetValues, q1, q3),
-      quartiles: { q1: q1, q3: q3 },
+      quartiles: { q1, q3 },
     }
 
     // Anomaly Detection
@@ -1049,20 +1164,26 @@ export default function AIDashboardGenerator({
         ...comprehensiveAnalysis,
       })
 
+      const dashboardContent = {
+        kpis,
+        trendCharts,
+        detailCharts,
+        insights,
+        summary,
+        summaryTable,
+        topPerformers,
+        domainContext,
+        forecasts,
+        ...comprehensiveAnalysis,
+      }
+
       if (onAnalysisUpdate) {
         onAnalysisUpdate({
-          kpis,
-          trendCharts,
-          detailCharts,
-          insights,
-          summary,
-          summaryTable,
-          topPerformers,
-          domainContext,
-          forecasts,
-          ...comprehensiveAnalysis,
+          aiDashboard: dashboardContent,
         })
       }
+
+      setIsGenerated(true) // Mark as generated
     } catch (error) {
       console.error("Error generating dashboard:", error)
       setError(error instanceof Error ? error.message : "Failed to generate dashboard")
@@ -1982,7 +2103,7 @@ export default function AIDashboardGenerator({
         id: "human-segmentation",
         type: "segmentation" as const,
         title: "🎉 Success Stories",
-        description: `What's really working well is ${max > average * 1.2 ? "your top performers are absolutely crushing it - they're showing everyone else what's possible" : "the overall stability and predictable patterns you're seeing"}. ${selectedCategoryColumn ? `Some ${selectedCategoryColumn} groups are clearly doing something right that others could learn from.` : "These consistent patterns give you a solid foundation to build on."}`,
+        description: `What's really working well is ${max > average * 1.5 ? "your top performers are absolutely crushing it - they're showing everyone else what's possible" : "the overall stability and predictable patterns you're seeing"}. ${selectedCategoryColumn ? `Some ${selectedCategoryColumn} groups are clearly doing something right that others could learn from.` : "These consistent patterns give you a solid foundation to build on."}`,
         severity: "success" as const,
         impact: "medium" as const,
         confidence: 84,
@@ -2479,25 +2600,7 @@ export default function AIDashboardGenerator({
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            Business Intelligence Dashboard
-          </CardTitle>
-          <CardDescription>AI-Generated Analysis for {fileName}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Render existing content here */}
-            {/* <pre className="text-sm bg-muted p-4 rounded-lg overflow-auto">
-              {JSON.stringify(existingContent, null, 2)}
-            </pre> */}
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="space-y-6 max-w-full mx-auto px-4">
       {/* Enhanced Header */}
       <div className="flex items-center justify-between py-3 border-b border-gray-200">
         <div>
@@ -2682,6 +2785,9 @@ export default function AIDashboardGenerator({
           </div>
         </CardContent>
       </Card>
+
+      {/* Dashboard Version Viewer - positioned after generation section */}
+      <DashboardVersionViewer fileName={fileName} onLoadVersion={handleLoadVersionData} showByDefault={false} />
 
       {/* Generation Progress */}
       {isGenerating && (

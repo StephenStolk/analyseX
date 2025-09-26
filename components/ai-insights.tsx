@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { saveDashboardContent, updateCurrentAnalysis } from "@/lib/data-persistence"
 
 interface AiInsightsProps {
   initialPromptType?: "general_analysis" | "dashboard_understanding"
@@ -263,10 +264,7 @@ export function AiInsights({
               : [],
           },
         }
-        aiResponse = await analyzeDataWithAI(
-          results.data || [],
-          Array.isArray(results.columnStats) ? results.columnStats.map((col: { name: string }) => col.name) : []
-        )
+        aiResponse = await analyzeDataWithAI([dataSubset], Array.isArray(dataSubset.summary?.columns) ? dataSubset.summary.columns.map((col: any) => col.name) : [])
         setChatMessages((prev) => [
           ...prev,
           {
@@ -280,6 +278,20 @@ export function AiInsights({
       setAiResults(aiResponse as AnalysisResponse)
       sessionStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(aiResponse))
       setRetryCount(0)
+
+      const insightsArray =
+        Array.isArray((aiResponse as any).insights) && (aiResponse as any).insights.length > 0
+          ? (aiResponse as any).insights
+          : [{ title: "AI Insight", description: (aiResponse as any).answer || "AI analysis result" }]
+
+      // Save into current analysis session's dashboard content for persistence/versioning
+      try {
+        saveDashboardContent({ aiInsights: insightsArray })
+        // Best-effort update; if not in history yet, this will be session-only which is fine
+        updateCurrentAnalysis({ dashboardContent: { aiInsights: insightsArray } })
+      } catch (e) {
+        console.warn("[v0] Failed to persist AI insights to dashboard content:", e)
+      }
     } catch (error) {
       console.error("Error generating AI insights:", error)
       setError(

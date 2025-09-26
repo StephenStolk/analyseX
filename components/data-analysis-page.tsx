@@ -12,9 +12,16 @@ import { toast } from "@/hooks/use-toast"
 import { CorrelationMatrix } from "./correlation-matrix"
 import { EnhancedTrendAnalysis } from "./enhanced-trend-analysis"
 import { CustomChartBuilder } from "./custom-chart-builder"
-import AIDashboardGenerator from "./ai-dashboard-generator"
+import { AIDashboardGenerator } from "./ai-dashboard-generator"
 import { ReportsGenerator } from "./reports-generator"
-import { getCurrentAnalysis, updateCurrentAnalysis, saveDashboardContent, markAsSaved } from "@/lib/data-persistence"
+import {
+  getCurrentAnalysis,
+  updateCurrentAnalysis,
+  saveDashboardContent,
+  markAsSaved,
+  getAnalysisResults,
+  initializeAnalysisSession,
+} from "@/lib/data-persistence"
 
 export function DataAnalysisPage() {
   const router = useRouter()
@@ -62,15 +69,21 @@ export function DataAnalysisPage() {
         setIsSaved(currentSession.isSaved || false)
         setDashboardContent(currentSession.dashboardContent || {})
       } else {
-        const resultsString = sessionStorage.getItem("analysisResults")
+        results = getAnalysisResults()
 
-        if (!resultsString) {
+        if (!results) {
           console.log("No analysis results found, redirecting to upload page")
           router.push("/app/upload")
           return
         }
 
-        results = JSON.parse(resultsString)
+        if (!currentSession) {
+          analysisId = initializeAnalysisSession(results.fileName, results, {
+            analysisType: ["basic"],
+            fileSize: results.fileSize,
+          })
+          setCurrentAnalysisId(analysisId)
+        }
       }
 
       console.log("[v0] Raw analysis data:", results)
@@ -241,9 +254,13 @@ export function DataAnalysisPage() {
     if (currentAnalysisId) {
       const updatedContent = { ...dashboardContent, ...updates }
       setDashboardContent(updatedContent)
+
       saveDashboardContent(updatedContent)
 
-      const success = updateCurrentAnalysis(updates)
+      const success = updateCurrentAnalysis({
+        dashboardContent: updatedContent,
+        ...updates,
+      })
       if (success) {
         console.log("[v0] Analysis updated in session:", updates)
       }
@@ -453,8 +470,7 @@ export function DataAnalysisPage() {
                   categoricalColumns={categoricalColumns}
                   fileName={fileName}
                   onAnalysisUpdate={handleAnalysisUpdate}
-                  existingContent={dashboardContent.aiDashboard}
-                />
+                  existingContent={dashboardContent.aiDashboard} dateColumns={[]}                />
               </div>
             </TabsContent>
             <TabsContent value="correlation" className="space-y-6">
@@ -469,7 +485,7 @@ export function DataAnalysisPage() {
                 columns={data.length > 0 ? Object.keys(data[0]) : []}
                 numericColumns={numericColumns}
                 categoricalColumns={categoricalColumns}
-                onChartsUpdate={(charts) => handleAnalysisUpdate({ customCharts: charts })}
+                onChartsChange={(charts: any) => handleAnalysisUpdate({ customCharts: charts })}
                 existingCharts={dashboardContent.customCharts}
               />
             </TabsContent>

@@ -55,11 +55,11 @@ const config = {
         },
         // Custom chart colors based on purple/indigo theme
         chart: {
-          "1": "hsl(260 80% 50%)", // A vibrant purple
-          "2": "hsl(270 70% 60%)", // Lighter purple
-          "3": "hsl(280 60% 70%)", // Even lighter purple
-          "4": "hsl(290 50% 80%)", // Lightest purple
-          "5": "hsl(250 90% 40%)", // Deeper purple
+          "1": "hsl(260 80% 50%)", 
+          "2": "hsl(270 70% 60%)",
+          "3": "hsl(280 60% 70%)",
+          "4": "hsl(290 50% 80%)",
+          "5": "hsl(250 90% 40%)",
         },
       },
       borderRadius: {
@@ -80,6 +80,10 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      fontFamily: {
+        serif: ["var(--font-playfair)", "serif"], // for headings
+        sans: ["var(--font-inter)", "sans-serif"], // optional body font
       },
     },
   },

@@ -31,6 +31,8 @@ import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import BentoPrivacy from "./bento-privacy"
+import HeroSection from "./HeroSection"
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
@@ -336,388 +338,177 @@ export function LandingPage() {
         {/* Hero Section */}
    <section
   ref={ref}
-  className="relative overflow-hidden pb-16 pt-20 md:pb-28 md:pt-32"
+  className="relative overflow-hidden pb-16 md:pb-28"
   style={{ perspective: "1000px" }}
   onMouseMove={handleMouseMove}
 >
-  {/* Background with diagonal cut */}
-  <div className="absolute inset-0 -z-20">
-    <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent clip-diagonal" />
-  </div>
+  <HeroSection />
+</section>
 
-  {/* Grid powering up background */}
-  <div className="absolute inset-0 -z-10">
-    <div className="grid-bg absolute inset-0" />
-    <div className="grid-glow absolute inset-0" />
-  </div>
 
-  <div className="container px-4 md:px-6">
-    <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
-      {/* Left Side - Text */}
+{/* Features Section */}
+<section className="relative py-28 bg-white dark:bg-background overflow-hidden">
+  <div className="container relative px-6 md:px-12">
+    {/* Heading */}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+      className="mb-20 text-center max-w-2xl mx-auto"
+    >
+      <h2 className="text-4xl md:text-5xl font-serif font-normal tracking-tight mb-6 text-foreground dark:text-white">
+        Privacy-First Data Analysis
+      </h2>
+      <p className="text-lg font-sans text-muted-foreground dark:text-gray-300 leading-relaxed">
+        Advanced analytics with <span className="font-semibold text-foreground dark:text-white">end-to-end privacy</span> baked into every feature.
+      </p>
+    </motion.div>
+
+    {/* Layout */}
+    <div className="relative flex flex-col lg:flex-row items-center justify-center gap-16">
+      {/* Center Secure Data Core */}
       <motion.div
-        ref={heroRef}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="flex flex-col space-y-6 text-left"
-        style={{ transformStyle: "preserve-3d" }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        whileInView={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="relative z-10 w-56 h-56 rounded-3xl bg-black text-white shadow-2xl flex items-center justify-center font-serif font-semibold text-xl text-center px-6"
       >
-        {/* Badge */}
-        <motion.div
-          variants={itemVariants}
-          className="inline-flex items-center gap-2 self-start rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 ring-1 ring-emerald-500/20 border border-emerald-500/20"
-        >
-          <Shield className="h-4 w-4" />
-          100% Private & Secure
-        </motion.div>
-
-        {/* Heading */}
-        <motion.h1
-          variants={itemVariants}
-          className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl"
-        >
-          Analyze Your Data{" "}
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Without Compromise
-          </span>
-        </motion.h1>
-
-        {/* Description */}
-        <p className="max-w-[550px] text-base text-muted-foreground md:text-lg">
-          Your data stays 100% private on your device. Upload Excel and CSV files for instant AI-powered analysis with
-          beautiful visualizations — no storage, no privacy concerns, no compromises.
-        </p>
-
-        {/* Buttons */}
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col gap-4 sm:flex-row"
-        >
-          <Button
-            asChild
-            size="lg"
-            className="group rounded-full px-6 py-4 text-sm shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Link href={getStartedLink}>
-              {user ? "Go to Dashboard" : "Start Analyzing"}
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="lg"
-            className="rounded-full px-6 py-4 text-sm glass-effect hover:bg-primary/5 transition-all duration-300 bg-transparent"
-            asChild
-          >
-            <Link href="#pricing">View Pricing</Link>
-          </Button>
-        </motion.div>
+        Secure Data Core
       </motion.div>
 
-      {/* Right Side - Image */}
-      <motion.div
-        variants={itemVariants}
-        className="relative flex justify-center md:justify-end"
-      >
-        <img
-          src="/hero-illustration.png"
-          alt="Data visualization preview"
-          className="w-full max-w-md rounded-xl shadow-lg"
-        />
-      </motion.div>
+      {/* Features */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10 max-w-2xl">
+        {features.map((feature, i) => {
+          const Icon = feature.icon;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-start gap-3 p-6 rounded-2xl border border-muted/20 
+                         bg-white dark:bg-gray-800 shadow-md dark:shadow-lg 
+                         hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-black text-white shadow-inner">
+                <Icon className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold font-sans text-foreground dark:text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-muted-foreground dark:text-gray-300 mt-1 font-sans">
+                  {feature.description}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   </div>
 </section>
 
 
 
-        {/* Trusted By Section */}
-        {/* <section className="py-12 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-y border-purple-200/20">
-          <div className="container px-4 md:px-6">
-            <div className="text-center mb-8">
-              <p className="text-sm font-medium text-muted-foreground mb-6">Trusted by teams at</p>
-              <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-                <div className="text-2xl font-bold text-purple-600">TechCorp</div>
-                <div className="text-2xl font-bold text-purple-600">DataFlow</div>
-                <div className="text-2xl font-bold text-purple-600">AnalyticsPro</div>
-                <div className="text-2xl font-bold text-purple-600">InsightLab</div>
-                <div className="text-2xl font-bold text-purple-600">MetricHub</div>
-              </div>
-            </div>
-          </div>
-        </section> */}
+       <section
+  className="relative py-28 bg-white dark:bg-background overflow-hidden"
+>
+  {/* Subtle background grid */}
+  <div
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      backgroundImage:
+        'linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)',
+      backgroundSize: '40px 40px',
+    }}
+  ></div>
 
-        {/* Privacy Trust Section */}
-        <section className="py-16 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 border-y border-emerald-200/20">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-8 md:grid-cols-3 items-center">
-              <div className="text-center group">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Lock className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Zero Data Storage</h3>
-                <p className="text-sm text-muted-foreground">
-                  Your files are processed locally and never uploaded to our servers
-                </p>
-              </div>
-              <div className="text-center group">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Eye className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Complete Privacy</h3>
-                <p className="text-sm text-muted-foreground">
-                  We can't see your data because it never leaves your device
-                </p>
-              </div>
-              <div className="text-center group">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Database className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Your Data, Your Control</h3>
-                <p className="text-sm text-muted-foreground">
-                  Full control over your sensitive information at all times
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+  <div className="container relative px-6 md:px-12">
+    {/* Heading */}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}
+      className="mb-20 text-center relative z-10"
+    >
+      <h2 className="mb-6 text-4xl sm:text-5xl md:text-6xl font-serif font-normal leading-tight tracking-tight">
+        Results in seconds, not hours
+      </h2>
+      <p className="mx-auto max-w-[720px] text-lg font-sans text-muted-foreground leading-relaxed">
+        Simply connect your data, ask your question, and get actionable insights instantly with{" "}
+        <span className="font-semibold text-foreground">AnalyzeX</span>.
+      </p>
+    </motion.div>
 
-        {/* Results Process Section */}
-        <section className="py-24 bg-gradient-to-b from-purple-50/30 to-background dark:from-purple-950/10">
-          <div className="container px-4 md:px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mb-16 text-center"
-            >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
-                Results in seconds, not hours
-              </h2>
-              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-                Ask for what you want and AnalyzeX analyzes the data for you
-              </p>
-            </motion.div>
-
-            <div className="grid gap-8 md:grid-cols-3 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="text-center md:text-left"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-                  <span className="text-lg font-bold text-purple-600">1</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2">Connect all your data sources</h3>
-                <p className="text-muted-foreground">
-                  Connect with data sources like databases, spreadsheets, and more
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-                  <span className="text-lg font-bold text-purple-600">2</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2">Ask for analysis</h3>
-                <p className="text-muted-foreground">You provide the questions, AnalyzeX handles the analysis</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-center md:text-right"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-                  <span className="text-lg font-bold text-purple-600">3</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2">Get results, instantly</h3>
-                <p className="text-muted-foreground">
-                  Choose from charts, tables or full reports tailored to your data
-                </p>
-              </motion.div>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              viewport={{ once: true }}
-              className="mt-12 flex justify-center"
-            >
-              <Button asChild size="lg" className="rounded-full px-8 py-6">
-                <Link href={getStartedLink}>Get started for free</Link>
-              </Button>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-       <section className="relative py-32 bg-gradient-to-b from-muted/30 via-background to-background">
-      <div className="container relative px-4 md:px-6 flex flex-col items-center">
-        {/* Heading */}
+    {/* Steps */}
+    <div className="grid gap-10 md:grid-cols-3 relative z-10">
+      {[{
+        step: "1",
+        title: "Connect all your data sources",
+        desc: "Connect with databases, spreadsheets, and more seamlessly.",
+      }, {
+        step: "2",
+        title: "Ask for analysis",
+        desc: "You provide the questions, AnalyzeX does the heavy lifting.",
+      }, {
+        step: "3",
+        title: "Get results, instantly",
+        desc: "Choose charts, tables, or full reports tailored to your needs.",
+      }].map((item, i) => (
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          key={i}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, delay: i * 0.2, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="mb-20 text-center max-w-3xl mx-auto"
+          whileHover={{ y: -6, boxShadow: "0px 12px 24px rgba(0,0,0,0.1)" }}
+          className="relative p-8 rounded-2xl bg-white dark:bg-card border border-muted/20 shadow-sm transition-all duration-300"
         >
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
-            Privacy-First Data Analysis
-          </h2>
-          <p className="mx-auto max-w-[700px] text-lg text-muted-foreground">
-            Advanced analytics with uncompromising privacy protection built into every feature.
-          </p>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-black/5 dark:bg-white/10 text-black dark:text-white font-bold text-lg mb-5">
+              {item.step}
+            </div>
+            <h3 className="text-lg font-semibold mb-2 font-sans">{item.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed font-sans">{item.desc}</p>
+          </div>
         </motion.div>
+      ))}
+    </div>
 
-        {/* Circular Dial */}
-        <div className="relative w-[500px] h-[500px] flex items-center justify-center">
-          {/* Center Dial */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative z-10 w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 shadow-2xl flex items-center justify-center text-white font-bold text-lg"
-          >
-            Secure Data Core
-          </motion.div>
+    {/* CTA */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}
+      className="mt-16 flex justify-center relative z-10"
+    >
+      <Button
+        asChild
+        size="lg"
+        className="rounded-full px-10 py-6 bg-black text-white shadow-md hover:bg-neutral-800 hover:shadow-lg transition-all font-sans"
+      >
+        <Link href={getStartedLink}>Get started for free</Link>
+      </Button>
+    </motion.div>
+  </div>
+</section>
 
-          {/* Features around the circle */}
-          {features.map((feature, i) => {
-            const angle = (i / features.length) * (2 * Math.PI);
-            const radius = 180; // distance from center
-            const x = Math.cos(angle) * radius + 250; // 250 = half of container size
-            const y = Math.sin(angle) * radius + 250;
 
-            const Icon = feature.icon; // ✅ Extract icon component
+      
 
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="absolute"
-                style={{ left: x, top: y, transform: "translate(-50%, -50%)" }}
-              >
-                <div className="flex flex-col items-center text-center w-40">
-                  <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-md">
-                    <Icon className="h-6 w-6" /> {/* ✅ Properly rendered */}
-                  </div>
-                  <h3 className="text-sm font-semibold">{features1.title}</h3>
-                  <p className="text-xs text-muted-foreground">{feature.description}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
 
         {/* Use Cases Section */}
-       <section className="py-24 bg-gradient-to-b from-purple-50/30 to-background dark:from-purple-950/10">
-      <div className="container px-4 md:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-16 text-center"
-        >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
-            An AnalyzeX for every job
-              </h2>
-        </motion.div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  title: "Finance Analyst",
-                  description: "Balance sheet creation for a SaaS company",
-                  icon: TrendingUp,
-                  gradient: "from-purple-500/20 to-blue-500/20",
-                },
-                {
-                  title: "Marketing",
-                  description: "Acquisition channel efficiency analysis",
-                  icon: BarChart2,
-                  gradient: "from-purple-500/20 to-pink-500/20",
-                },
-                {
-                  title: "Operations",
-                  description: "Forecasting and inventory optimization",
-                  icon: Activity,
-                  gradient: "from-purple-500/20 to-indigo-500/20",
-                },
-                {
-                  title: "Business Owners",
-                  description: "Cash flow forecasting and budgeting",
-                  icon: PieChart,
-                  gradient: "from-purple-500/20 to-violet-500/20",
-                },
-                {
-                  title: "Data Science",
-                  description: "Data cleaning and preparation",
-                  icon: Database,
-                  gradient: "from-purple-500/20 to-cyan-500/20",
-                },
-                {
-                  title: "Scientific Research",
-                  description: "Correlation matrix on research datasets",
-                  icon: LineChart,
-                  gradient: "from-purple-500/20 to-emerald-500/20",
-                },
-              ].map((useCase, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.03 }}
-                className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${useCase.gradient} p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/20 hover:border-purple-300/30`}
-              >
-                  <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/90 dark:bg-gray-900/90 shadow-lg">
-                        <useCase.icon className="h-6 w-6 text-purple-600" />
-                      </div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-2">{useCase.title}</h3>
-                    <p className="text-muted-foreground text-sm mb-4">{useCase.description}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-purple-600 hover:text-purple-700 p-0 h-auto font-medium"
-                    >
-                      Try it out →
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-              ))}
-        </div>
-      </div>
-    </section>
+       <BentoPrivacy />
 
 
         {/* Testimonials Section */}
-        <section className="py-24">
+        {/* <section className="py-24">
           <div className="container px-4 md:px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -771,10 +562,10 @@ export function LandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Security Section */}
-        <section className="py-24 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20">
+        {/* <section className="py-24 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20">
           <div className="container px-4 md:px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -835,139 +626,147 @@ export function LandingPage() {
               </motion.div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* How It Works Section */}
-        <section className="steps-section py-24" style={{ perspective: "1200px" }}>
-          <div className="container px-4 md:px-6">
+        <section
+  className="steps-section relative py-24 overflow-hidden bg-white dark:bg-background"
+  style={{ perspective: "1200px" }}
+>
+  {/* Moving Grid Background */}
+  <div className="absolute inset-0 z-0 overflow-hidden">
+    <div className="w-full h-full grid grid-cols-12 grid-rows-12 opacity-20 animate-gridMove">
+      {Array.from({ length: 12 * 12 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="border border-gray-300 dark:border-gray-600"
+          style={{
+            width: "100%",
+            height: "100%",
+            boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+          }}
+        />
+      ))}
+    </div>
+  </div>
+
+  <div className="container relative px-4 md:px-6 z-10">
+    {/* Heading */}
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="mb-16 text-center"
+    >
+      <h2 className="text-3xl font-serif sm:text-4xl md:text-5xl mb-4 text-foreground dark:text-white tracking-tight">
+        Secure Three-Step Process
+      </h2>
+      <p className="mx-auto max-w-[700px] text-lg text-muted-foreground dark:text-gray-300 leading-relaxed font-sans">
+        From private upload to insights in minutes — your data never leaves your device.
+      </p>
+    </motion.div>
+
+    {/* Steps */}
+    <div className="grid gap-8 md:grid-cols-3">
+      {[{
+        step: "01",
+        title: "Secure Upload",
+        description: "Drag and drop your files into our privacy-first platform. All processing happens locally on your device.",
+        icon: FileSpreadsheet,
+      }, {
+        step: "02",
+        title: "Private AI Analysis",
+        description: "Our advanced AI engine analyzes your data instantly without any data leaving your device.",
+        icon: Zap,
+      }, {
+        step: "03",
+        title: "Explore Insights",
+        description: "Visualize trends, patterns, and predictions with interactive dashboards — all completely private.",
+        icon: BarChart2,
+      }].map((item, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, delay: i * 0.15 }}
+          viewport={{ once: true }}
+          className="step-card relative group"
+        >
+          <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-gray-900/80 backdrop-blur-md p-8 shadow-xl dark:shadow-2xl border border-gray-300 dark:border-gray-700 hover:shadow-2xl transition-all duration-500">
+            {/* Step Number */}
+            <div className="absolute top-4 right-4 text-6xl font-bold text-black/20 dark:text-primary/30">
+  {item.step}
+</div>
+
+
+            {/* Icon */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mb-16 text-center hover-3d"
+              className="mb-6 inline-flex rounded-2xl bg-black text-white p-4 border border-gray-700 shadow-lg"
+              whileHover={{ rotateX: 360, scale: 1.1, transition: { duration: 0.8 } }}
+              style={{ transformStyle: "preserve-3d" }}
             >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4 hover-3d">
-                Secure Three-Step Process
-              </h2>
-              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground hover-3d">
-                From private upload to insights in minutes - your data never leaves your device.
-              </p>
+              <item.icon className="h-7 w-7" />
             </motion.div>
 
-            <div className="grid gap-8 md:grid-cols-3">
-              {[
-                {
-                  step: "01",
-                  title: "Secure Upload",
-                  description:
-                    "Drag and drop your files into our privacy-first platform. All processing happens locally on your device.",
-                  icon: FileSpreadsheet,
-                },
-                {
-                  step: "02",
-                  title: "Private AI Analysis",
-                  description:
-                    "Our advanced AI engine analyzes your data instantly without any data leaving your device.",
-                  icon: Zap,
-                },
-                {
-                  step: "03",
-                  title: "Explore Insights",
-                  description:
-                    "Visualize trends, patterns, and predictions with interactive dashboards - all completely private.",
-                  icon: BarChart2,
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="step-card relative group hover-3d"
-                  onMouseEnter={(e) => handle3DHover(e.currentTarget, true)}
-                  onMouseLeave={(e) => handle3DHover(e.currentTarget, false)}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  <div className="relative overflow-hidden rounded-3xl bg-card/80 backdrop-blur-sm p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-border/50 group-hover:border-primary/20">
-                    <motion.div
-                      className="absolute top-4 right-4 text-6xl font-bold text-primary/10 group-hover:text-primary/20 transition-colors duration-300 hover-3d"
-                      animate={{
-                        rotateZ: [0, 5, -5, 0],
-                      }}
-                      transition={{
-                        duration: 4,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      {item.step}
-                    </motion.div>
-                    <div className="relative z-10">
-                      <motion.div
-                        className="mb-6 inline-flex rounded-2xl bg-primary/10 p-4 hover-3d border border-primary/20 shadow-lg"
-                        whileHover={{
-                          rotateX: 360,
-                          scale: 1.1,
-                          transition: { duration: 0.8 },
-                        }}
-                        style={{ transformStyle: "preserve-3d" }}
-                      >
-                        <item.icon className="h-7 w-7 text-primary" />
-                      </motion.div>
-                      <h3 className="mb-4 text-xl font-bold hover-3d">{item.title}</h3>
-                      <p className="text-muted-foreground leading-relaxed hover-3d">{item.description}</p>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
-                  {i < 2 && (
-                    <motion.div
-                      className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-primary/50 to-transparent hover-3d"
-                      animate={{
-                        scaleX: [1, 1.2, 1],
-                        opacity: [0.5, 1, 0.5],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            {/* Title & Description */}
+            <h3 className="mb-4 text-xl font-bold font-serif text-black dark:text-white">{item.title}</h3>
+            <p className="text-muted-foreground dark:text-gray-300 leading-relaxed font-sans">{item.description}</p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mt-16 flex justify-center hover-3d"
-            >
-              <motion.div
-                whileHover={{
-                  scale: 1.05,
-                  rotateX: -5,
-                  z: 20,
-                }}
-                whileTap={{
-                  scale: 0.95,
-                  rotateX: 5,
-                }}
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                <Button
-                  asChild
-                  size="lg"
-                  className="group rounded-full px-8 py-6 text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Link href={getStartedLink}>
-                    {user ? "Go to Dashboard" : "Start Your Analysis"}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-              </motion.div>
-            </motion.div>
+            {/* Gradient overlay on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
-        </section>
+
+          {/* Connecting line between steps */}
+          {i < 2 && (
+            <motion.div
+              className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-primary/50 to-transparent"
+              animate={{ scaleX: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )}
+        </motion.div>
+      ))}
+    </div>
+
+    {/* CTA Button */}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="mt-16 flex justify-center"
+    >
+      <motion.div
+        whileHover={{ scale: 1.05, rotateX: -5, z: 20 }}
+        whileTap={{ scale: 0.95, rotateX: 5 }}
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <Button
+          asChild
+          size="lg"
+          className="group rounded-full px-8 py-6 text-base shadow-lg bg-black text-white hover:bg-white hover:text-black border border-black dark:border-white transition-all duration-300"
+        >
+          <Link href={getStartedLink}>
+            {user ? "Go to Dashboard" : "Start Your Analysis"}
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </Button>
+      </motion.div>
+    </motion.div>
+  </div>
+
+  {/* Tailwind CSS animation for grid */}
+  <style jsx>{`
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-15%); }
+      100% { transform: translateY(0); }
+    }
+    .animate-gridMove { animation: gridMove 25s linear infinite; }
+  `}</style>
+</section>
+
 
         {/* Pricing Section */}
         <div id="pricing" className="bg-gradient-to-b from-muted/30 to-background">
@@ -975,50 +774,52 @@ export function LandingPage() {
         </div>
 
         {/* CTA Section */}
-        <section className="py-24" style={{ perspective: "1000px" }}>
-          <div className="container px-4 md:px-6">
-            <div
-              className="cta-section relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-12 text-center shadow-2xl hover-3d backdrop-blur-sm border border-primary/20"
-              onMouseEnter={(e) => handle3DHover(e.currentTarget, true)}
-              onMouseLeave={(e) => handle3DHover(e.currentTarget, false)}
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5" />
-              <div className="relative z-10">
-                <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl hover-3d">
-                  Ready for Private Data Analysis?
-                </h2>
-                <p className="mx-auto mb-8 max-w-[600px] text-lg text-muted-foreground hover-3d">
-                  Join thousands of professionals who trust AnalyzeX to unlock insights while keeping their data
-                  completely private and secure.
-                </p>
-                <motion.div
-                  whileHover={{
-                    scale: 1.05,
-                    rotateX: -5,
-                    z: 30,
-                  }}
-                  whileTap={{
-                    scale: 0.95,
-                    rotateX: 5,
-                  }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  <Button
-                    asChild
-                    size="lg"
-                    className="group rounded-full px-8 py-6 text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <Link href={getStartedLink}>
-                      {user ? "Go to Dashboard" : "Get Started for Free"}
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
+{/* CTA Section */}
+<section className="py-24 bg-white dark:bg-background" style={{ perspective: "1000px" }}>
+  <div className="container px-4 md:px-6">
+    <div
+      className="cta-section relative overflow-hidden rounded-3xl bg-black/80 dark:bg-white/10 p-12 text-center shadow-2xl hover:shadow-3xl hover-3d backdrop-blur-sm border border-black/20 dark:border-white/20 transition-colors duration-300"
+      onMouseEnter={(e) => handle3DHover(e.currentTarget, true)}
+      onMouseLeave={(e) => handle3DHover(e.currentTarget, false)}
+      style={{ transformStyle: "preserve-3d" }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-black/5 to-white/5 opacity-20" />
+      <div className="relative z-10">
+        <h2 className="mb-6 text-3xl font-serif font-bold tracking-tight sm:text-4xl dark:text-white text-black hover-3d">
+          Ready for Private Data Analysis?
+        </h2>
+        <p className="mx-auto mb-8 max-w-[600px] text-lg font-sans text-black dark:text-white/80 leading-relaxed hover-3d">
+          Join thousands of professionals who trust AnalyzeX to unlock insights while keeping their data
+          completely private and secure.
+        </p>
+        <motion.div
+          whileHover={{
+            scale: 1.05,
+            rotateX: -5,
+            z: 30,
+          }}
+          whileTap={{
+            scale: 0.95,
+            rotateX: 5,
+          }}
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <Button
+            asChild
+            size="lg"
+            className="group rounded-full px-8 py-6 text-base font-sans shadow-lg bg-black text-white hover:bg-white hover:text-black border border-black dark:border-white transition-all duration-300"
+          >
+            <Link href={getStartedLink}>
+              {user ? "Go to Dashboard" : "Get Started for Free"}
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    </div>
+  </div>
+</section>
+
       </main>
 
       <Footer />

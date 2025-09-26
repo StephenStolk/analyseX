@@ -116,6 +116,7 @@ export function AppStartPage() {
                 datasetsLimit={usageInfo.datasetsLimit}
                 isUnlimited={usageInfo.isUnlimited}
                 canGenerate={usageInfo.canGenerate}
+                planName={usageInfo.planName}
                 onUpgrade={() => setShowPlanModal(true)}
               />
             </motion.div>
